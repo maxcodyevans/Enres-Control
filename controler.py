@@ -1,7 +1,9 @@
 import piplates.RELAYplate as rly
 import piplates.DAQCplate as daq
 import time
+import threading
 from threading import Thread
+
 
 # sample relay code, turn on K1
 # rly.relayON(0,1)
@@ -18,14 +20,17 @@ from threading import Thread
 SLEEP = 5  # Sleep Default
 
 
-def Cerrar_rodajas(prendido, hay_cartones):
+def Cerrar_rodajas(prendido, hay_cartones,lock):
     global rodajas_cerradas
+    lock.acquire()
 
     # Condiciones Entrada
     if prendido and hay_cartones:
+
         daq.setDOUTbit(1, 0)
         time.sleep(SLEEP)
         rodajas_cerradas = True
+
 
     # Condiciones Salida
     if (not prendido) or rollo_soltado or brazos_acercados:
@@ -33,11 +38,13 @@ def Cerrar_rodajas(prendido, hay_cartones):
         time.sleep(SLEEP)
         rodajas_cerradas = False
 
+    lock.release()
     return
 
 
-def Acercar_brazos(prendido, rodajas_cerradas, motor_prendido):
+def Acercar_brazos(prendido, medido_largo, rodajas_cerradas, motor_prendido,lock):
     global brazos_acercados
+    lock.acquire()
 
     if prendido and rodajas_cerradas and not motor_prendido:
         daq.setDOUTbit(1, 1)
@@ -49,10 +56,11 @@ def Acercar_brazos(prendido, rodajas_cerradas, motor_prendido):
         time.sleep(SLEEP)
         brazos_acercados = False
 
+    lock.release()
     return
 
 
-def Prender_motor(brazos_acercados, tapa_rollos, medido_largo, acercar_rollo_maestro):
+def Prender_motor(tapa_rollos, medido_largo, brazos_acercados, acercar_rollo_maestro):
     global motor_prendido
 
     if brazos_acercados and tapa_rollos and medido_largo and acercar_rollo_maestro:
@@ -117,7 +125,9 @@ def main():
 
     # estado de funciones
     rodajas_cerradas = False
+    lock_rodajas = threading.Lock()
     brazos_acercados = False
+    lock_brazos = threading.Lock()
     motor_prendido = False
     rollo_maestro_rodajas = False
     rollo_maestro_acercado = False
@@ -126,11 +136,11 @@ def main():
     while prendido():
 
         #Cerrar_rodajas(prendido, hay_cartones, rodajas_cerradas)
-        thread = Thread(task=Cerrar_rodajas(), arg=(prendido(), hay_cartones()))
+        thread = Thread(task=Cerrar_rodajas(), arg=(prendido(), hay_cartones(),lock_rodajas))
         thread.start()
 
         #Acercar_brazos(prendido, rodajas_cerradas, motor_prendido, medido_largo, brazos_acercados)
-        thread2 = Thread(Acercar_brazos(), (prendido(), medido_largo(), rodajas_cerradas, motor_prendido))
+        thread2 = Thread(Acercar_brazos(), (prendido(), medido_largo(), rodajas_cerradas, motor_prendido,lock_brazos))
         thread2.start()
 
         Prender_motor(tapa_rollos(), medido_largo(), brazos_acercados, acercar_rollo_maestro)
