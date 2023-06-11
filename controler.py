@@ -112,6 +112,15 @@ def Acercar_rollo_maestro(rollo_maestro_soltado, tapa_rollos, rollo_maestro_roda
         rollo_maestro_acercado = True
     return
 
+class RodajasThread(Thread):
+    def __init__(self):
+        Thread.__init__(self)
+        self.daemon = True
+        self.start()
+
+    def run(self):
+        while True:
+
 
 def main():
     def prendido() :         return not bool(daq.getDINbit(1, 0))  # TRUE by default
@@ -136,7 +145,7 @@ def main():
     while prendido():
 
         #Cerrar_rodajas(prendido, hay_cartones, rodajas_cerradas)
-        thread = Thread(task=Cerrar_rodajas(), arg=(prendido(), hay_cartones(),lock_rodajas))
+        thread = RodajasThread(task=Cerrar_rodajas(), arg=(prendido(), hay_cartones(),lock_rodajas))
         thread.start()
 
         #Acercar_brazos(prendido, rodajas_cerradas, motor_prendido, medido_largo, brazos_acercados)
