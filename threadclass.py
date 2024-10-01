@@ -131,9 +131,7 @@ def main():
 
     # estado de funciones
     rodajas_cerradas = False
-
     brazos_acercados = False
-
     motor_prendido = False
     rollo_maestro_rodajas = False
     rollo_maestro_acercado = False
