@@ -1,7 +1,7 @@
 import time
 from threading import Thread
 import tkinter as tk
-
+import time
 # DAQSimulator class simulating the DAQ inputs using keyboard inputs
 class DAQSimulator:
     def __init__(self, root):
@@ -78,6 +78,8 @@ class BaseThread(Thread):
         self.sleep_entrada = sleep_entrada
         self.sleep_salida = sleep_salida
         self.daemon = True
+        self.start_time = time.time()
+
 
     def check_on_conditions(self):
         """To be implemented by subclasses: Checks whether the 'on' conditions are met."""
@@ -91,17 +93,19 @@ class BaseThread(Thread):
         try:
             while Prendido(self.daq):
                 if self.check_on_conditions():
-                    print(f"Output {self.dout_bit} turned ON")
+                    elapsed_time = time.time() - self.start_time
+                    print(f"Output {self.dout_bit} turned ON at {elapsed_time:.2f} seconds")
                     time.sleep(self.sleep_entrada)
                     self.set_state(True)
 
                 if self.check_off_conditions():
-                    print(f"Output {self.dout_bit} turned OFF")
+                    elapsed_time = time.time() - self.start_time
+                    print(f"Output {self.dout_bit} turned OFF at {elapsed_time:.2f} seconds")
                     time.sleep(self.sleep_salida)
                     self.set_state(False)
         finally:
             if not Prendido(self.daq):
-                print(f"Output {self.dout_bit} turned OFF (Prendido off)")
+                print(f"Output {self.dout_bit} turned OFF (Prendido off) at {elapsed_time:.2f} seconds")
 
     def set_state(self, state_value):
         """Update the specific state variable. To be implemented by subclasses."""
