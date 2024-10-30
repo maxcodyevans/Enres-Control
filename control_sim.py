@@ -103,6 +103,7 @@ class BaseThread(Thread):
                     print(f"Output {self.dout_bit} turned OFF at {elapsed_time:.2f} seconds")
                     time.sleep(self.sleep_salida)
                     self.set_state(False)
+                time.sleep(0.1)
         finally:
             if not Prendido(self.daq):
                 print(f"Output {self.dout_bit} turned OFF (Prendido off) at {elapsed_time:.2f} seconds")

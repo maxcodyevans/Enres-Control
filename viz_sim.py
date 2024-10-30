@@ -151,7 +151,7 @@ class SimulatorGUI:
 
 
         # Re-run this method after a short delay (500ms)
-        root.after(500, self.update_labels)
+        root.after(1000, self.update_labels)
 
 
 def main():
